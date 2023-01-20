@@ -7,6 +7,7 @@ import subprocess
 import traceback
 from dataclasses import dataclass, field
 from functools import partial
+from pathlib import Path
 from typing import Any, Optional, Union
 
 
@@ -77,14 +78,19 @@ class ShellDict(dict):
 
 def main() -> None:
     env: dict[str, Any] = ShellDict(globals().copy())
+
+    history_path: Path = Path("~/.pysh_history").expanduser()
+    history_path.touch()
+    readline.read_history_file(history_path)
     while True:
         try:
             print(eval(input('>>> '), env), end="")
         except (EOFError, KeyboardInterrupt):
             print()
-            return
+            break
         except Exception:
             traceback.print_exc()
+    readline.write_history_file(history_path)
 
 
 if __name__ == '__main__':
