@@ -80,22 +80,22 @@ class ShellDict(dict):
 
 def default_prompt() -> str:
     prompt: list[str] = []
-    prompt.append(term.green(f"{os.getlogin()}@{os.uname().nodename.split('.')[0]}"))
+    prompt.append(term.green(f"{os.getlogin()}@{os.uname().nodename.split('.')[0]}", bold=True))
 
     try:
-        prompt.append(term.blue(str('~' / Path.cwd().relative_to(Path.home()))))
+        prompt.append(term.blue(str('~' / Path.cwd().relative_to(Path.home())), bold=True))
     except ValueError:
-        prompt.append(term.blue(str(Path.cwd())))
+        prompt.append(term.blue(str(Path.cwd()), bold=True))
 
     branch = subprocess.run(['git', 'symbolic-ref', '--quiet', 'HEAD'], capture_output=True)
     if branch.returncode == 0:
         dirty = subprocess.run(['git', 'status', '--porcelain', '--untracked-files=no'], capture_output=True)
-        prompt.append(term.yellow(f'({branch.stdout.decode().rstrip().replace("refs/heads/", "")}{"*" if dirty.stdout.rstrip() else ""})'))
+        prompt.append(term.yellow(f'({branch.stdout.decode().rstrip().replace("refs/heads/", "")}{"*" if dirty.stdout.rstrip() else ""})', bold=True))
 
     if os.geteuid() == 0:
-        prompt.append(term.blue("#"))
+        prompt.append(term.blue("#", bold=True))
     else:
-        prompt.append(term.blue("$"))
+        prompt.append(term.blue("$", bold=True))
 
     prompt.append('')
     return ' '.join(prompt)
