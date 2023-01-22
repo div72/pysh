@@ -8,7 +8,7 @@ import traceback
 from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
-from typing import Any, Optional, Union
+from typing import Any, Callable, Optional, Union
 
 
 class ShellProgram:
@@ -76,6 +76,24 @@ class ShellDict(dict):
             raise
 
 
+def default_prompt() -> str:
+    prompt: list[str] = []
+    prompt.append(f"{os.getlogin()}@{os.uname().nodename.split('.')[0]}")
+
+    try:
+        prompt.append(str('~' / Path.cwd().relative_to(Path.home())))
+    except ValueError:
+        prompt.append(str(Path.cwd()))
+
+    if os.geteuid() == 0:
+        prompt.append("#")
+    else:
+        prompt.append("$")
+
+    prompt.append('')
+    return ' '.join(prompt)
+
+
 def main() -> None:
     env: dict[str, str] = os.environ
     globals_: dict[str, Any] = ShellDict(locals().copy())
@@ -84,15 +102,18 @@ def main() -> None:
     history_path.touch()
     readline.read_history_file(history_path)
 
+    globals_["prompt_function"] = default_prompt
+
     pyshrc_path: Path = Path("~/.pyshrc").expanduser()
     if pyshrc_path.is_file():
-        exec(pyshrc_path.read_text(), locals())
+        exec(pyshrc_path.read_text(), globals_)
 
     while True:
         try:
-            command: str = input('>>>')
+            command: str = input(globals_['prompt_function']())
             if not command:
                 continue
+
             try:
                 ret: object = eval(command, globals_)
                 if ret is not None:
