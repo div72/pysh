@@ -77,14 +77,26 @@ class ShellDict(dict):
 
 
 def main() -> None:
-    env: dict[str, Any] = ShellDict(globals().copy())
+    env: dict[str, str] = os.environ
+    globals_: dict[str, Any] = ShellDict(locals().copy())
 
     history_path: Path = Path("~/.pysh_history").expanduser()
     history_path.touch()
     readline.read_history_file(history_path)
     while True:
         try:
-            print(eval(input('>>> '), env), end="")
+            command: str = input('>>>')
+            if not command:
+                continue
+            try:
+                ret: object = eval(command, globals_)
+                if ret is not None:
+                    end: str = "\n"
+                    if isinstance(ret, (ShellProgram, PipedShellProgram)):
+                        end = ""
+                    print(ret, end=end)
+            except SyntaxError:
+                exec(command, globals_)
         except (EOFError, KeyboardInterrupt):
             print()
             break
