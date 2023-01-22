@@ -87,6 +87,11 @@ def default_prompt() -> str:
     except ValueError:
         prompt.append(term.blue(str(Path.cwd())))
 
+    branch = subprocess.run(['git', 'symbolic-ref', '--quiet', 'HEAD'], capture_output=True)
+    if branch.returncode == 0:
+        dirty = subprocess.run(['git', 'status', '--porcelain', '--untracked-files=no'], capture_output=True)
+        prompt.append(term.yellow(f'({branch.stdout.decode().rstrip().replace("refs/heads/", "")}{"*" if dirty.stdout.rstrip() else ""})'))
+
     if os.geteuid() == 0:
         prompt.append(term.blue("#"))
     else:
