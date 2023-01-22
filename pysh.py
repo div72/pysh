@@ -10,6 +10,8 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Callable, Optional, Union
 
+import term
+
 
 class ShellProgram:
     executable: str
@@ -78,17 +80,17 @@ class ShellDict(dict):
 
 def default_prompt() -> str:
     prompt: list[str] = []
-    prompt.append(f"{os.getlogin()}@{os.uname().nodename.split('.')[0]}")
+    prompt.append(term.green(f"{os.getlogin()}@{os.uname().nodename.split('.')[0]}"))
 
     try:
-        prompt.append(str('~' / Path.cwd().relative_to(Path.home())))
+        prompt.append(term.blue(str('~' / Path.cwd().relative_to(Path.home()))))
     except ValueError:
-        prompt.append(str(Path.cwd()))
+        prompt.append(term.blue(str(Path.cwd())))
 
     if os.geteuid() == 0:
-        prompt.append("#")
+        prompt.append(term.blue("#"))
     else:
-        prompt.append("$")
+        prompt.append(term.blue("$"))
 
     prompt.append('')
     return ' '.join(prompt)
@@ -96,7 +98,7 @@ def default_prompt() -> str:
 
 def main() -> None:
     env: dict[str, str] = os.environ
-    globals_: dict[str, Any] = ShellDict(locals().copy())
+    globals_: dict[str, Any] = ShellDict({**locals(), **globals()})
 
     history_path: Path = Path("~/.pysh_history").expanduser()
     history_path.touch()
