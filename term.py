@@ -1,24 +1,25 @@
-def black(text: str) -> str:
-    return f"\u001b[30m{text}\u001b[0m"
+from functools import partial
+from typing import Optional
 
-def red(text: str) -> str:
-    return f"\u001b[31m{text}\u001b[0m"
+COLOUR_CODES: dict[str, str] = {"black": "30", "red": "31", "green": "32", "yellow": "33", "blue": "34", "magenta": "35", "cyan": "36", "white": "37"}
 
-def green(text: str) -> str:
-    return f"\u001b[32m{text}\u001b[0m"
 
-def yellow(text: str) -> str:
-    return f"\u001b[33m{text}\u001b[0m"
+def custom_text(text: str, colour: Optional[str] = None, bold = False) -> str:
+    parts: list[str] = []
 
-def blue(text: str) -> str:
-    return f"\u001b[34m{text}\u001b[0m"
+    if bold:
+        parts.append('\u001b[1m')
 
-def magenta(text: str) -> str:
-    return f"\u001b[35m{text}\u001b[0m"
+    if colour is not None:
+        parts.append(f'\u001b[{COLOUR_CODES[colour]}m')
 
-def cyan(text: str) -> str:
-    return f"\u001b[36m{text}\u001b[0m"
+    parts.append(text)
 
-def white(text: str) -> str:
-    return f"\u001b[37m{text}\u001b[0m"
+    parts.append("\u001b[0m")
+
+    return ''.join(parts)
+
+
+for colour in COLOUR_CODES:
+    globals()[colour] = partial(custom_text, colour=colour)
 
