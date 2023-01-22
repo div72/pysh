@@ -120,7 +120,7 @@ def main() -> None:
                     end: str = "\n"
                     if isinstance(ret, (ShellProgram, PipedShellProgram)):
                         end = ""
-                    print(ret, end=end)
+                    print(repr(ret), end=end)
             except SyntaxError:
                 exec(command, globals_)
         except (EOFError, KeyboardInterrupt):
