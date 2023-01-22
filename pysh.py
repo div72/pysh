@@ -83,6 +83,11 @@ def main() -> None:
     history_path: Path = Path("~/.pysh_history").expanduser()
     history_path.touch()
     readline.read_history_file(history_path)
+
+    pyshrc_path: Path = Path("~/.pyshrc").expanduser()
+    if pyshrc_path.is_file():
+        exec(pyshrc_path.read_text(), locals())
+
     while True:
         try:
             command: str = input('>>>')
